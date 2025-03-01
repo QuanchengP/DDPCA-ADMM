@@ -1,6 +1,6 @@
 # DDPCA-ADMM
 
-Source files will be uploaded soon......
+Source code will be uploaded soon......
 
 Domain decomposition-based parallel contact analysis by alternating direction method of multipliers.
 
