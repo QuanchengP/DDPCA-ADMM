@@ -10,7 +10,7 @@ Domain decomposition-based parallel contact analysis by alternating direction me
 
 2.Prerequisite package: make, g++
 
-3.Prerequisite library: Eigen, Spectra (there is no need to download these two libraries, because these two libraries are alredy contained in the source code)
+3.Prerequisite library: Eigen, Spectra (there is no need to download these two libraries, because these two libraries are already contained in the source code)
 > + Eigen link: <https://gitlab.com/libeigen/eigen/>
 >   + or: <https://eigen.tuxfamily.org/index.php?title=Main_Page>
 > + Spectra link: <https://spectralib.org/>
