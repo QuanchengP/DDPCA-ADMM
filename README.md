@@ -25,7 +25,7 @@ Domain decomposition-based parallel contact analysis by alternating direction me
 
 In case of any problem in code compilation or execution, please feel free to contact us by email (QuanchengPeng@sylu.edu.cn) or other available communications.
 
-## Logic structure
+## Structure description
 
 ```mermaid
 graph LR;
