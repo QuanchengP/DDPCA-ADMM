@@ -15,7 +15,7 @@ Domain decomposition-based parallel contact analysis by alternating direction me
 > + Spectra link: <https://spectralib.org/>
 
 4.Compiling command: $ make -j
-> + Beforehand, use the "cd" command to switch to the directory where the source code is located..
+> + Beforehand, use the "cd" command to switch to the directory where the source code is located.
 
 5.Execution: $ ./Test
 > + The minimum required RAM is 128GB.
