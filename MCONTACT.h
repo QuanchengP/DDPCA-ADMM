@@ -79,13 +79,13 @@ public:
 	SPARMATS globTran_1;
 	std::vector<Eigen::SparseMatrix<double,Eigen::RowMajor>> globTran_D_1;
 	Eigen::VectorXd globForc_1;
-	SPARMATS inteInte;//inteInpo * inpoDisp
 	DIRE_SOLV coarSolv_D_1;
 	COGR_SOLV coarSolv_C_1;
 	MGPIS mgpi_1;
 	long DOUBLE_M_1();
 	long MULTISCALE_1();
 	/*********************************************************************************************/
+	long APPS_MPL();
 	long APPS();//automatic penalty parameter selection
 	/*********************************************************************************************/
 	//lagrange multiplier method: the levels of all bodies are the same
@@ -2295,16 +2295,6 @@ long MCONTACT::MULTISCALE_1(){
 			globTran_1[ts][tv].setFromTriplets(tranList.begin(), tranList.end());
 		}
 	}
-	//***************************************************************************************
-	VECT_RESI(inteInte, searCont.size(), 4);
-	#pragma omp parallel for
-	for(long ts = 0; ts < searCont.size(); ts ++){
-		for(long tv = 0; tv < 2; tv ++){
-			double flag = (tv == 0) ? -1.0 : 1.0;
-			inteInte[ts][2 * tv] = 0.5 * flag * inteInpo[ts][tv] * inpoDisp[ts][tv];
-			inteInte[ts][2 * tv + 1] = 0.5 * flag * inteInpo[ts][tv] * inpoDisp[ts][1 - tv];
-		}
-	}
 	return 1;
 }
 
@@ -2406,6 +2396,80 @@ long MCONTACT::APPS(){
 			tempStre.clear();
 		}
 	}
+	OUTPUT_TIME("MCONTACT::APPS finished.");
+	return 1;
+}
+
+long MCONTACT::APPS_MPL(){
+	OUTPUT_TIME("MCONTACT::APPS_MPL");
+	if(globCoup.rows() <= 0){
+		OUTPUT_TIME("MCONTACT::APPS_MPL ERROR 1");
+		return -1;
+	}
+	//
+	long freqNumb = 10;
+	typedef Spectra::SparseSymMatProd<double,Eigen::Lower,Eigen::RowMajor> SSMP;
+	SSMP oper(globCoup);
+	int tempNumb = globCoup.rows();
+	Spectra::SymEigsSolver<SSMP> eigs_0(oper, freqNumb, std::min(20 * (int)freqNumb, tempNumb));
+	eigs_0.init();
+	//SmallestMagn,LargestMagn
+	int ncon = eigs_0.compute(Spectra::SortRule::SmallestMagn, 
+		1000000, 1.0E-6, Spectra::SortRule::SmallestMagn
+	);
+	if(eigs_0.info() != Spectra::CompInfo::Successful){
+		OUTPUT_TIME("MCONTACT::APPS_MPL ERROR 2");
+		return -1;
+	}
+	Eigen::VectorXd tempValu = eigs_0.eigenvalues();
+	Eigen::MatrixXd tempVect = eigs_0.eigenvectors();
+	//
+	globForc_1.resize(baseReco[multGrid.size()]);
+	#pragma omp parallel for
+	for(long tv = 0; tv < multGrid.size(); tv ++){
+		//
+		Eigen::VectorXd tempCofo = multGrid[tv].consForc;
+		for(long ti = multGrid[tv].mgpi.maxiLeve - 1; ti >= doleMcsc[tv]; ti --){
+			tempCofo = multGrid[tv].mgpi.realProl[ti].transpose() * tempCofo.eval();
+		}
+		globForc_1.block(baseReco[tv],0,tempCofo.rows(),1) = tempCofo;
+	}
+	Eigen::VectorXd tempForc = globForc_1.normalized();
+	std::ofstream tempOfst(DIRECTORY("resuFreq.txt"), std::ios::out);
+	tempOfst << std::setiosflags(std::ios::scientific) << std::setprecision(20);
+	for(long tf = 0; tf < freqNumb; tf ++){
+		Eigen::VectorXd globSolu = tempVect.col(tf);
+		Eigen::VectorXd tempModa = globSolu.head(tempForc.size());
+		double tempCorr = tempModa.dot(tempForc);
+		tempOfst << std::setw(30) << tempValu[tf] << std::setw(30) << tempCorr  << std::endl;
+		std::cout << "Oder: " << tf + 1 << ", freq: " << tempValu[tf] 
+			<< ", corr: " << tempCorr << std::endl;
+	}
+	tempOfst.close();
+	for(long tf = 0; tf < freqNumb; tf ++){
+		Eigen::VectorXd globSolu = tempVect.col(tf);
+		std::cout << "Normalization of " << tf << "-th mode: " 
+			<< globSolu.dot(globSolu) << std::endl;
+		#pragma omp parallel for
+		for(long tv = 0; tv < multGrid.size(); tv ++){
+			Eigen::VectorXd resuSolu = globSolu.block(
+				baseReco[tv],0,multGrid[tv].mgpi.consStif[doleMcsc[tv]].rows(),1
+			);
+			resuSolu = multGrid[tv].consOper[doleMcsc[tv]].transpose() * resuSolu;
+			for(long ti = doleMcsc[tv]; ti < multGrid[tv].mgpi.maxiLeve; ti ++){
+				resuSolu = multGrid[tv].prolOper[ti] * resuSolu;
+			}
+			resuSolu = multGrid[tv].consOper[multGrid[tv].mgpi.maxiLeve] * resuSolu;
+			Eigen::VectorXd outpDisp;
+			multGrid[tv].OUTP_SUB1(resuSolu, outpDisp);
+			std::stringstream tempStre;
+			tempStre << tf + 1 << "-" << tv;
+			multGrid[tv].OUTP_SUB2(outpDisp, tempStre.str());
+			tempStre.str("");
+			tempStre.clear();
+		}
+	}
+	OUTPUT_TIME("MCONTACT::APPS_MPL finished.");
 	return 1;
 }
 
@@ -2490,6 +2554,57 @@ long MCONTACT::CONTACT_ANALYSIS(){
 				multGrid[tv].OUTP_SUB2(resuDisp[tv], tv);
 			}
 		}
+		//**********************************interface-eliminated*****************************
+		if((muscSett >> 1) % 2 == 1 && tc <= MULT_MAXI){
+			Eigen::VectorXd globForc = globForc_1;
+			for(long ts = 0; ts < searCont.size(); ts ++){
+				for(long tv = 0; tv < 2; tv ++){
+					globForc += globTran_1[ts][tv] * inteLagr[ts][tv];
+				}
+			}
+			for(long tv = 0; tv < multGrid.size(); tv ++){
+				globForc -= (globTran_D_1[tv] * resuDisp[tv]);
+			}
+			Eigen::VectorXd globSolu;
+			OUTPUT_TIME("MCONTACT::CONTACT_ANALYSIS: coupling solver 1");
+			if(globCoup_1.rows() < DIRE_MAXI){
+				globSolu = coarSolv_D_1.solve(globForc);
+			}
+			else if(globCoup_1.rows() < COGR_MAXI){
+				globSolu = coarSolv_C_1.solve(globForc);
+			}
+			else{
+				mgpi_1.CG_SOLV(1, globForc, globSolu);
+			}
+			OUTPUT_TIME("MCONTACT::CONTACT_ANALYSIS: coupling solver 1 done");
+			std::vector<Eigen::VectorXd> outpDisp(multGrid.size());
+			#pragma omp parallel for
+			for(long tv = 0; tv < multGrid.size(); tv ++){
+				Eigen::VectorXd resuSolu = globSolu.block(
+					baseReco[tv],0,multGrid[tv].mgpi.consStif[doleMcsc[tv]].rows(),1
+				);
+				resuSolu = accuProl[tv] * resuSolu;
+				multGrid[tv].OUTP_SUB1(resuSolu, outpDisp[tv]);
+				resuDisp[tv] += outpDisp[tv];
+				multGrid[tv].OUTP_SUB2(resuDisp[tv], tv);
+			}
+			// #pragma omp parallel for
+			// for(long ts = 0; ts < searCont.size(); ts ++){
+				// for(long tv = 0; tv < 2; tv ++){
+					// Eigen::VectorXd inteForc = 
+						// inteInte[ts][2 * tv] * outpDisp[contBody[ts][tv]] 
+						// + inteInte[ts][2 * tv + 1] * outpDisp[contBody[ts][1 - tv]];
+					// if(inteMass[ts][tv].rows() < DIRE_MAXI){
+						// inteAuxi[ts][tv] += (inteDiso[ts][tv]).solve(inteForc);
+					// }
+					// else{
+						// COGR_SOLV solv_0;
+						// solv_0.compute(inteMass[ts][tv]);
+						// inteAuxi[ts][tv] += solv_0.solve(inteForc);
+					// }
+				// }
+			// }
+		}
 		//********************************interface balance**********************************
 		std::cout << "Auxiliary solver";
 		OUTPUT_TIME("");
@@ -2548,57 +2663,6 @@ long MCONTACT::CONTACT_ANALYSIS(){
 					COGR_SOLV solv_0;
 					solv_0.compute(inteMass_pena[ts][tv]);
 					inteAuxi[ts][tv] = solv_0.solve(inteForc);
-				}
-			}
-		}
-		//**********************************interface-eliminated*****************************
-		if((muscSett >> 1) % 2 == 1 && tc <= MULT_MAXI){
-			Eigen::VectorXd globForc = globForc_1;
-			for(long ts = 0; ts < searCont.size(); ts ++){
-				for(long tv = 0; tv < 2; tv ++){
-					globForc += globTran_1[ts][tv] * inteLagr[ts][tv];
-				}
-			}
-			for(long tv = 0; tv < multGrid.size(); tv ++){
-				globForc -= (globTran_D_1[tv] * resuDisp[tv]);
-			}
-			Eigen::VectorXd globSolu;
-			OUTPUT_TIME("MCONTACT::CONTACT_ANALYSIS: coupling solver 1");
-			if(globCoup_1.rows() < DIRE_MAXI){
-				globSolu = coarSolv_D_1.solve(globForc);
-			}
-			else if(globCoup_1.rows() < COGR_MAXI){
-				globSolu = coarSolv_C_1.solve(globForc);
-			}
-			else{
-				mgpi_1.CG_SOLV(1, globForc, globSolu);
-			}
-			OUTPUT_TIME("MCONTACT::CONTACT_ANALYSIS: coupling solver 1 done");
-			std::vector<Eigen::VectorXd> outpDisp(multGrid.size());
-			#pragma omp parallel for
-			for(long tv = 0; tv < multGrid.size(); tv ++){
-				Eigen::VectorXd resuSolu = globSolu.block(
-					baseReco[tv],0,multGrid[tv].mgpi.consStif[doleMcsc[tv]].rows(),1
-				);
-				resuSolu = accuProl[tv] * resuSolu;
-				multGrid[tv].OUTP_SUB1(resuSolu, outpDisp[tv]);
-				resuDisp[tv] += outpDisp[tv];
-				multGrid[tv].OUTP_SUB2(resuDisp[tv], tv);
-			}
-			#pragma omp parallel for
-			for(long ts = 0; ts < searCont.size(); ts ++){
-				for(long tv = 0; tv < 2; tv ++){
-					Eigen::VectorXd inteForc = 
-						inteInte[ts][2 * tv] * outpDisp[contBody[ts][tv]] 
-						+ inteInte[ts][2 * tv + 1] * outpDisp[contBody[ts][1 - tv]];
-					if(inteMass[ts][tv].rows() < DIRE_MAXI){
-						inteAuxi[ts][tv] += (inteDiso[ts][tv]).solve(inteForc);
-					}
-					else{
-						COGR_SOLV solv_0;
-						solv_0.compute(inteMass[ts][tv]);
-						inteAuxi[ts][tv] += solv_0.solve(inteForc);
-					}
 				}
 			}
 		}
