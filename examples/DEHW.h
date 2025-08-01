@@ -2173,6 +2173,7 @@ long DEHW::SOLVE(long appsCont, long isnoDode){
 	//
 	if(appsCont <= 0){
 		muscSett = (1 << 1);
+		// muscSett = (1 << 0);
 	}
 	else{
 		muscSett = whadCosp;
@@ -2220,6 +2221,7 @@ long DEHW::SOLVE(long appsCont, long isnoDode){
 	}
 	if(appsCont <= 0){
 		APPS();
+		// APPS_MPL();
 	}
 	else{
 		if(appsCont == 1){
