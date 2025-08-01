@@ -389,24 +389,53 @@ long BLOCK::MESH(){
 long BLOCK::LOAD_SUB(long tb, long tg){
 	//
 	double zCoo = (tb == 0) ? leng[0] : leng[0] + leng[1];
+	std::vector<std::vector<Eigen::Vector3d>> pseuElem_0;
+	VECT_RESI(pseuElem_0, 4, 4);
+	pseuElem_0[0][0] << - leng[0 + tb] / 2.0, - leng[0 + tb] / 2.0, zCoo;
+	pseuElem_0[0][1] << - leng[0 + tb] / 2.0, - leng[1 + tb] / 2.0, zCoo;
+	pseuElem_0[0][2] << leng[0 + tb] / 2.0, - leng[1 + tb] / 2.0, zCoo;
+	pseuElem_0[0][3] << leng[0 + tb] / 2.0, - leng[0 + tb] / 2.0, zCoo;
+	pseuElem_0[1][0] << - leng[0 + tb] / 2.0, - leng[1 + tb] / 2.0, zCoo;
+	pseuElem_0[1][1] << - leng[0 + tb] / 2.0, leng[1 + tb] / 2.0, zCoo;
+	pseuElem_0[1][2] << - leng[1 + tb] / 2.0, leng[1 + tb] / 2.0, zCoo;
+	pseuElem_0[1][3] << - leng[1 + tb] / 2.0, - leng[1 + tb] / 2.0, zCoo;
+	pseuElem_0[2][0] << leng[1 + tb] / 2.0, - leng[1 + tb] / 2.0, zCoo;
+	pseuElem_0[2][1] << leng[1 + tb] / 2.0, leng[1 + tb] / 2.0, zCoo;
+	pseuElem_0[2][2] << leng[0 + tb] / 2.0, leng[1 + tb] / 2.0, zCoo;
+	pseuElem_0[2][3] << leng[0 + tb] / 2.0, - leng[1 + tb] / 2.0, zCoo;
+	pseuElem_0[3][0] << - leng[0 + tb] / 2.0, leng[1 + tb] / 2.0, zCoo;
+	pseuElem_0[3][1] << - leng[0 + tb] / 2.0, leng[0 + tb] / 2.0, zCoo;
+	pseuElem_0[3][2] << leng[0 + tb] / 2.0, leng[0 + tb] / 2.0, zCoo;
+	pseuElem_0[3][3] << leng[0 + tb] / 2.0, leng[1 + tb] / 2.0, zCoo;
 	std::vector<std::vector<Eigen::Vector3d>> pseuElem;
-	VECT_RESI(pseuElem, 4, 4);
-	pseuElem[0][0] << - leng[0 + tb] / 2.0, - leng[0 + tb] / 2.0, zCoo;
-	pseuElem[0][1] << - leng[0 + tb] / 2.0, - leng[1 + tb] / 2.0, zCoo;
-	pseuElem[0][2] << leng[0 + tb] / 2.0, - leng[1 + tb] / 2.0, zCoo;
-	pseuElem[0][3] << leng[0 + tb] / 2.0, - leng[0 + tb] / 2.0, zCoo;
-	pseuElem[1][0] << - leng[0 + tb] / 2.0, - leng[1 + tb] / 2.0, zCoo;
-	pseuElem[1][1] << - leng[0 + tb] / 2.0, leng[1 + tb] / 2.0, zCoo;
-	pseuElem[1][2] << - leng[1 + tb] / 2.0, leng[1 + tb] / 2.0, zCoo;
-	pseuElem[1][3] << - leng[1 + tb] / 2.0, - leng[1 + tb] / 2.0, zCoo;
-	pseuElem[2][0] << leng[1 + tb] / 2.0, - leng[1 + tb] / 2.0, zCoo;
-	pseuElem[2][1] << leng[1 + tb] / 2.0, leng[1 + tb] / 2.0, zCoo;
-	pseuElem[2][2] << leng[0 + tb] / 2.0, leng[1 + tb] / 2.0, zCoo;
-	pseuElem[2][3] << leng[0 + tb] / 2.0, - leng[1 + tb] / 2.0, zCoo;
-	pseuElem[3][0] << - leng[0 + tb] / 2.0, leng[1 + tb] / 2.0, zCoo;
-	pseuElem[3][1] << - leng[0 + tb] / 2.0, leng[0 + tb] / 2.0, zCoo;
-	pseuElem[3][2] << leng[0 + tb] / 2.0, leng[0 + tb] / 2.0, zCoo;
-	pseuElem[3][3] << leng[0 + tb] / 2.0, leng[1 + tb] / 2.0, zCoo;
+	VECT_RESI(pseuElem, 4 * 3 * 3, 4);
+	for(long ti = 0; ti < 4; ti ++){
+		for(long tj = 0; tj < 3; tj ++){
+			for(long tk = 0; tk < 3; tk ++){
+				long id_tijk = ti * 9 + tj * 3 + tk;
+				pseuElem[id_tijk][0](0) = pseuElem_0[ti][0](0) 
+					+ (pseuElem_0[ti][3](0) - pseuElem_0[ti][0](0)) / 3.0 * tj;
+				pseuElem[id_tijk][0](1) = pseuElem_0[ti][0](1) 
+					+ (pseuElem_0[ti][1](1) - pseuElem_0[ti][0](1)) / 3.0 * tk;
+				pseuElem[id_tijk][0](2) = zCoo;
+				pseuElem[id_tijk][1](0) = pseuElem_0[ti][0](0) 
+					+ (pseuElem_0[ti][3](0) - pseuElem_0[ti][0](0)) / 3.0 * tj;
+				pseuElem[id_tijk][1](1) = pseuElem_0[ti][0](1) 
+					+ (pseuElem_0[ti][1](1) - pseuElem_0[ti][0](1)) / 3.0 * (tk + 1);
+				pseuElem[id_tijk][1](2) = zCoo;
+				pseuElem[id_tijk][2](0) = pseuElem_0[ti][0](0) 
+					+ (pseuElem_0[ti][3](0) - pseuElem_0[ti][0](0)) / 3.0 * (tj + 1);
+				pseuElem[id_tijk][2](1) = pseuElem_0[ti][0](1) 
+					+ (pseuElem_0[ti][1](1) - pseuElem_0[ti][0](1)) / 3.0 * (tk + 1);
+				pseuElem[id_tijk][2](2) = zCoo;
+				pseuElem[id_tijk][3](0) = pseuElem_0[ti][0](0) 
+					+ (pseuElem_0[ti][3](0) - pseuElem_0[ti][0](0)) / 3.0 * (tj + 1);
+				pseuElem[id_tijk][3](1) = pseuElem_0[ti][0](1) 
+					+ (pseuElem_0[ti][1](1) - pseuElem_0[ti][0](1)) / 3.0 * tk;
+				pseuElem[id_tijk][3](2) = zCoo;
+			}
+		}
+	}
 	//
 	EFACE_SURFACE iterEfsu(&(multGrid[tg]), &(bmupSurf[(tb == 0) ? 0 : 2]));
 	while(iterEfsu.INCREMENT() == 1){
