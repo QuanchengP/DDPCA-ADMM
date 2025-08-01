@@ -590,6 +590,33 @@ long TORSION::SOLVE_DD(long appsCont){
 		APPS();
 	}
 	else{
+		//initialization
+		// for(long tv = 0; tv < multGrid.size(); tv ++){//for MONITOR
+			// double tempDisp = 0.0 + (1.159E-6 / domaNumb[2]) * (tv % domaNumb[2]);
+			// for(const auto &iterMgnc : multGrid[tv].nodeCoor){
+				// COOR tempCoor = iterMgnc.second;
+				// double tempAngl = atan2(tempCoor[1], tempCoor[0]) + PI / 2.0;
+				// (resuDisp[tv])(3 * iterMgnc.first + 0) = tempDisp * cos(tempAngl);
+				// (resuDisp[tv])(3 * iterMgnc.first + 1) = tempDisp * sin(tempAngl);
+			// }
+		// }
+		// #pragma omp parallel for
+		// for(long tv = 0; tv < multGrid.size(); tv ++){
+			// multGrid[tv].OUTP_SUB2(resuDisp[tv], tv);
+		// }
+		// long test; std::cin >> test;
+		// for(long ts = 0; ts < searCont.size(); ts ++){//necessary
+			// for(long tv = 0; tv < 2; tv ++){
+				// long tempBody = contBody[ts][tv];
+				// double tempDisp = 0.0 + (1.159E-6 / domaNumb[2]) * (tempBody % domaNumb[2]);
+				// for(const auto iterNoco : nodeCont[ts][tv]){
+					// COOR tempCoor = multGrid[tempBody].nodeCoor[iterNoco.first];
+					// double tempAngl = atan2(tempCoor[1], tempCoor[0]) + PI / 2.0;
+					// (inteAuxi[ts][tv])(3 * iterNoco.second + 0) = tempDisp * cos(tempAngl);
+					// (inteAuxi[ts][tv])(3 * iterNoco.second + 1) = tempDisp * sin(tempAngl);
+				// }
+			// }
+		// }
 		CONTACT_ANALYSIS();
 		//
 		#pragma omp parallel for
