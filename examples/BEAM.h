@@ -568,6 +568,31 @@ long BEAM::SOLVE_DD(long appsCont){
 		APPS();
 	}
 	else{
+		// initialization
+		// for(long tv = 0; tv < multGrid.size(); tv ++){//for MONITOR
+			// double tempDisp_y = 0.0 + (4.0E-4 / domaNumb[0]) * (tv / domaNumb[1]);
+			// double tempDisp_z = 0.0 + (-0.002888 / domaNumb[0]) * (tv / domaNumb[1]);
+			// for(const auto &iterMgnc : multGrid[tv].nodeCoor){
+				// (resuDisp[tv])(3 * iterMgnc.first + 1) = tempDisp_y;
+				// (resuDisp[tv])(3 * iterMgnc.first + 2) = tempDisp_z;
+			// }
+		// }
+		// #pragma omp parallel for
+		// for(long tv = 0; tv < multGrid.size(); tv ++){
+			// multGrid[tv].OUTP_SUB2(resuDisp[tv], tv);
+		// }
+		// long test; std::cin >> test;
+		// for(long ts = 0; ts < searCont.size(); ts ++){//necessary
+			// for(long tv = 0; tv < 2; tv ++){
+				// long tempBody = contBody[ts][tv];
+				// double tempDisp_y = 0.0 + (4.0E-4 / domaNumb[0]) * (tempBody / domaNumb[1]);
+				// double tempDisp_z = 0.0 + (-0.002888 / domaNumb[0]) * (tempBody / domaNumb[1]);
+				// for(const auto iterNoco : nodeCont[ts][tv]){
+					// (inteAuxi[ts][tv])(3 * iterNoco.second + 1) = tempDisp_y;
+					// (inteAuxi[ts][tv])(3 * iterNoco.second + 2) = tempDisp_z;
+				// }
+			// }
+		// }
 		CONTACT_ANALYSIS();
 		//
 		#pragma omp parallel for
