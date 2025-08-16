@@ -55,6 +55,7 @@
 #include "Eigen/Geometry"
 #include "Eigen/Sparse"
 #include "Eigen/SparseCholesky"
+#include "Eigen/SparseLU"
 #include "Spectra/SymEigsSolver.h"
 #include "Spectra/MatOp/SparseSymMatProd.h"
 
@@ -105,6 +106,7 @@ typedef std::vector<std::vector<std::vector<long>>> VECTOR3L;
 typedef std::vector<std::vector<std::vector<double>>> VECTOR3D;
 typedef std::vector<std::vector<std::vector<std::vector<long>>>> VECTOR4L;
 typedef Eigen::SimplicialLDLT<Eigen::SparseMatrix<double,Eigen::RowMajor>> DIRE_SOLV;
+typedef Eigen::SparseLU<Eigen::SparseMatrix<double>,Eigen::COLAMDOrdering<int>> DILU_SOLV;
 typedef Eigen::ConjugateGradient<Eigen::SparseMatrix<double,Eigen::RowMajor>, 
 	Eigen::Lower|Eigen::Upper> COGR_SOLV;
 typedef Eigen::SparseMatrix<double,Eigen::RowMajor>::InnerIterator RSPA_INNE;
