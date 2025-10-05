@@ -32,16 +32,10 @@ public:
 	//upper triangular matrix with zeros on the diagonal
 	std::vector<Eigen::SparseMatrix<double,Eigen::RowMajor>> consUppe;
 	//V cycle
-	template <typename SolvType>
 	long MULT_VCYC(long tempLeve, const Eigen::VectorXd &righHand, 
-		Eigen::VectorXd &resuSolu, const SolvType &direSolv
+		Eigen::VectorXd &resuSolu, const DIRE_SOLV &direSolv
 	);
 };
-
-template <typename SolvType>
-void INITIALIZE(const Eigen::SparseMatrix<double>& A, SolvType& solver) {
-    solver.compute(A);
-}
 
 long MGPIS::ESTABLISH(){
 	consLowe.resize(maxiLeve + 1);
@@ -58,9 +52,8 @@ long MGPIS::ESTABLISH(){
 	return 1;
 }
 
-template <typename SolvType>
 long MGPIS::MULT_VCYC(long tempLeve, const Eigen::VectorXd &righHand, 
-	Eigen::VectorXd &resuSolu, const SolvType &direSolv){
+	Eigen::VectorXd &resuSolu, const DIRE_SOLV &direSolv){
 	if(tempLeve == 0){
 		resuSolu = direSolv.solve(righHand);
 		return 1;
@@ -140,14 +133,14 @@ long MGPIS::MULT_SOLV(const Eigen::VectorXd &totaForc, Eigen::VectorXd &resuSolu
 	resuSolu = Eigen::VectorXd::Zero(consStif[maxiLeve].rows());
 	long maxiNumb = 10000;
 	double toleLimi = 1.0E-14 * totaForc.norm();
-	DILU_SOLV diluSolv;
-	INITIALIZE<DILU_SOLV>(Eigen::SparseMatrix<double,Eigen::ColMajor>(consStif[0]), diluSolv);
+	DIRE_SOLV direSolv;
+	direSolv.compute(consStif[0]);
 	//
 	long iterNumb = 0;
 	Eigen::VectorXd resiErro = totaForc - consStif[maxiLeve] * resuSolu;
 	std::vector<double> moniErro(5);
 	while(iterNumb < maxiNumb){
-		MULT_VCYC<DILU_SOLV>(maxiLeve, totaForc, resuSolu, diluSolv);
+		MULT_VCYC(maxiLeve, totaForc, resuSolu, direSolv);
 		resiErro = totaForc - consStif[maxiLeve] * resuSolu;
 		//
 		moniErro[iterNumb % moniErro.size()] = resiErro.norm();
@@ -189,7 +182,7 @@ long MGPIS::CG_SOLV(long precSwit, const Eigen::VectorXd &totaForc, Eigen::Vecto
 		DIAG_PREC(consStif[maxiLeve], diagPrec);
 	}
 	else if(precSwit == 1){
-		INITIALIZE<DIRE_SOLV>(consStif[0], direSolv);
+		direSolv.compute(consStif[0]);
 	}
 	//
 	long iterNumb = 0;
@@ -199,7 +192,7 @@ long MGPIS::CG_SOLV(long precSwit, const Eigen::VectorXd &totaForc, Eigen::Vecto
 		searDire = diagPrec * resiErro;
 	}
 	else if(precSwit == 1){
-		MULT_VCYC<DIRE_SOLV>(maxiLeve, resiErro, searDire, direSolv);
+		MULT_VCYC(maxiLeve, resiErro, searDire, direSolv);
 	}
 	double delt_new = resiErro.transpose() * searDire;
 	while(iterNumb < maxiNumb && resiErro.norm() > toleLimi){
@@ -213,7 +206,7 @@ long MGPIS::CG_SOLV(long precSwit, const Eigen::VectorXd &totaForc, Eigen::Vecto
 			precDire = diagPrec * resiErro;
 		}
 		else if(precSwit == 1){
-			MULT_VCYC<DIRE_SOLV>(maxiLeve, resiErro, precDire, direSolv);
+			MULT_VCYC(maxiLeve, resiErro, precDire, direSolv);
 		}
 		double delt_old = delt_new;
 		delt_new = resiErro.transpose() * precDire;
@@ -243,13 +236,13 @@ long MGPIS::GMRES_SOLV(long precSwit, const Eigen::VectorXd &totaForc, Eigen::Ve
 	//diagonal preconditioner
 	Eigen::DiagonalMatrix<double,Eigen::Dynamic> diagPrec(consStif[maxiLeve].rows());
 	//multigrid preconditioner
-	DILU_SOLV diluSolv;
+	DIRE_SOLV direSolv;
 	if(precSwit == 0){
 		DIAG_PREC(consStif[maxiLeve], diagPrec);
 	}
 	else if(precSwit == 1){
 		std::cout << "DOF of level 0 = " << consStif[0].rows() << std::endl;
-		INITIALIZE<DILU_SOLV>(Eigen::SparseMatrix<double,Eigen::ColMajor>(consStif[0]), diluSolv);
+		direSolv.compute(consStif[0]);
 	}
 	//
 	resuSolu = Eigen::VectorXd::Zero(consStif[maxiLeve].rows());
@@ -275,7 +268,7 @@ long MGPIS::GMRES_SOLV(long precSwit, const Eigen::VectorXd &totaForc, Eigen::Ve
 				precErro = diagPrec * origErro;
 			}
 			else if(precSwit == 1){
-				MULT_VCYC<DILU_SOLV>(maxiLeve, origErro, precErro, diluSolv);
+				MULT_VCYC(maxiLeve, origErro, precErro, direSolv);
 			}
 			normR_0 = precErro.norm();
 			supeHess.conservativeResize(0, 0);
@@ -288,7 +281,7 @@ long MGPIS::GMRES_SOLV(long precSwit, const Eigen::VectorXd &totaForc, Eigen::Ve
 			precV = diagPrec * origV;
 		}
 		else if(precSwit == 1){
-			MULT_VCYC<DILU_SOLV>(maxiLeve, origV, precV, diluSolv);
+			MULT_VCYC(maxiLeve, origV, precV, direSolv);
 		}
 		Eigen::VectorXd b_i = orthBasi.transpose() * precV;
 		Eigen::VectorXd q_ip1 = precV - orthBasi * b_i;
@@ -372,12 +365,12 @@ long MGPIS::BiCGSTAB_SOLV(long precSwit,
 	//diagonal preconditioner
 	Eigen::DiagonalMatrix<double,Eigen::Dynamic> diagPrec(consStif[maxiLeve].rows());
 	//multigrid preconditioner
-	DILU_SOLV diluSolv;
+	DIRE_SOLV direSolv;
 	if(precSwit == 0){
 		DIAG_PREC(consStif[maxiLeve], diagPrec);
 	}
 	else if(precSwit == 1){
-		INITIALIZE<DILU_SOLV>(Eigen::SparseMatrix<double,Eigen::ColMajor>(consStif[0]), diluSolv);
+		direSolv.compute(consStif[0]);
 	}
 	//
 	long iterNumb = 0;
@@ -405,7 +398,7 @@ long MGPIS::BiCGSTAB_SOLV(long precSwit,
 			prepP = diagPrec * p;
 		}
 		else if(precSwit == 1){
-			MULT_VCYC<DILU_SOLV>(maxiLeve, p, prepP, diluSolv);
+			MULT_VCYC(maxiLeve, p, prepP, direSolv);
 		}
 		v = consStif[maxiLeve] * prepP;
 		alph = rho[(iterNumb - 1 + 2) % 2] / resiOver.dot(v);
@@ -419,7 +412,7 @@ long MGPIS::BiCGSTAB_SOLV(long precSwit,
 			prepS = diagPrec * s;
 		}
 		else if(precSwit == 1){
-			MULT_VCYC<DILU_SOLV>(maxiLeve, s, prepS, diluSolv);
+			MULT_VCYC(maxiLeve, s, prepS, direSolv);
 		}
 		Eigen::VectorXd t = consStif[maxiLeve] * prepS;
 		omeg = t.dot(s) / t.dot(t);

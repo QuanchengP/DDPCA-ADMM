@@ -54,6 +54,8 @@ public:
 	);
 	long ESTABLISH();
 	long CONTACT_ANALYSIS();
+	double GET_CHAR_LENG();//get characteristic length according to average volume
+	long iterNumbReco;
 	//output monitor information at each step
 	long MONITOR(const long tc, std::ofstream &tempOfst, VECTOR2D &moniReco, 
 		const std::vector<Eigen::VectorXd> &resuDisp_0, 
@@ -2473,6 +2475,21 @@ long MCONTACT::APPS_MPL(){
 	return 1;
 }
 
+double MCONTACT::GET_CHAR_LENG(){
+	//
+	double charLeng = 0.0;
+	for(long tv = 0; tv < multGrid.size(); tv ++){
+		double tempVolu = multGrid[tv].GET_VOLUME();
+		std::cout << "The volume of the " << tv << "th subdomain is " << tempVolu << std::endl;
+		charLeng += tempVolu;
+	}
+	charLeng /= multGrid.size();
+	std::cout << "The average volume is " << charLeng << std::endl;
+	charLeng = pow(charLeng, 0.333333333333333333);
+	std::cout << "The characteristic length is " << charLeng << std::endl;
+	return charLeng;
+}
+
 long MCONTACT::CONTACT_ANALYSIS(){
 	long moniCycl = 10;
 	VECTOR2D moniReco(multGrid.size() + 4 * searCont.size());
@@ -2481,7 +2498,7 @@ long MCONTACT::CONTACT_ANALYSIS(){
 	}
 	//
 	long tc;
-	long maxiIter = 1000;
+	long maxiIter = 3000;
 	std::ofstream tempOfst(DIRECTORY("resuMoni.txt"), std::ios::out);
 	tempOfst << std::setiosflags(std::ios::scientific) << std::setprecision(20);
 	for(tc = 0; tc < maxiIter; tc ++){
@@ -2694,6 +2711,7 @@ long MCONTACT::CONTACT_ANALYSIS(){
 		}
 	}
 	tempOfst.close();
+	iterNumbReco = tc;
 	if(tc >= maxiIter){
 		std::cout << "Nonconvergence in MCONTACT::CONTACT_ANALYSIS";
 	}

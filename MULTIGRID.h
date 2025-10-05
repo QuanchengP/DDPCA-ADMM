@@ -68,6 +68,7 @@ public:
 	Eigen::SparseMatrix<double,Eigen::RowMajor> earlTran;
 	Eigen::SparseMatrix<double,Eigen::RowMajor> scalEarl;
 	long STIF_MATR();//construct original stiffness matrix
+	double GET_VOLUME();//calculate the volume by Guass numerical integration
 	/*********************************************************************************************/
 	//prolongation operator
 	std::vector<Eigen::SparseMatrix<double,Eigen::RowMajor>> prolOper;
@@ -1035,6 +1036,49 @@ long MULTIGRID::STIF_MATR(){
 		origStif[mgpi.maxiLeve + 1] += partStif[tp];
 	}
 	return 1;
+}
+
+double MULTIGRID::GET_VOLUME(){
+	//
+	long partSize = 50000;
+	long partNumb = elemVect.size() / partSize;
+	if(partNumb * partSize < elemVect.size()){
+		partNumb ++;
+	}
+	std::vector<double> partVolu(partNumb, 0.0);
+	#pragma omp parallel for
+	for(long tp = 0; tp < partNumb; tp ++){
+		long star_tp = tp * partSize;
+		long endi_tp = star_tp + partSize;
+		if(endi_tp > elemVect.size()){
+			endi_tp = elemVect.size();
+		}
+		if(star_tp >= endi_tp){
+			continue;
+		}
+		for(long ti = star_tp; ti < endi_tp; ti ++){
+			if(elemVect[ti].children.size() > 0){
+				continue;
+			}
+			Eigen::MatrixXd exyz = Eigen::MatrixXd::Zero(8, 3);
+			for(long tj = 0; tj < 8; tj ++){
+				auto iterNoco = nodeCoor.find(elemVect[ti].cornNode[tj]);
+				for(long tk = 0; tk < 3; tk ++){
+					exyz(tj,tk) = (iterNoco->second)[tk];
+				}
+			}
+			//
+			for(long tj = 0; tj < trilQuad.numbNgip; tj ++){
+				Eigen::MatrixXd ngipJact = trilQuad.pnpxNgip[tj] * exyz;
+				partVolu[tp] += trilQuad.niwfNgip[tj] * ngipJact.determinant();
+			}
+		}
+	}
+	double resuVolu = 0.0;
+	for(long tp = 0; tp < partNumb; tp ++){
+		resuVolu += partVolu[tp];
+	}
+	return resuVolu;
 }
 
 long MULTIGRID::LOAD_ACCU(long free_ti, double inpuLoad){
