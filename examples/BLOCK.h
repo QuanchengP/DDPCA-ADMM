@@ -1,6 +1,8 @@
 
 #include "../MCONTACT.h"
 
+constexpr double struScalFact = 1.0;//structure scale factor
+
 class BLOCK: public MCONTACT{
 public:
 	std::vector<double> leng;//edge length of each block
@@ -25,6 +27,7 @@ public:
 	long LOAD_SUB(long tb, long tg);//load subroutine for upper surface of middle/lower block
 	long LOAD_SUB2(long tg);//load subroutine for upper surface of upper block
 	long SOLVE(long appsCont = 1);//solve for displacement and contact pressure
+	double charFact = 25.0;
 };
 
 BLOCK::BLOCK(){
@@ -37,7 +40,7 @@ BLOCK::BLOCK(){
 	domaNumb = {3, 3, 3};//only support 1~3
 	doleMcsc.assign(3 * domaNumb[0] * domaNumb[1] * domaNumb[2] + 6, 1);
 	//
-	leng = {0.03, 0.025, 0.02};
+	leng = {0.03 * struScalFact, 0.025 * struScalFact, 0.02 * struScalFact};
 	diviNumb = {6, 6, 6};
 	globLeve = 4;
 	loadPres << 0.0E3, 0.0, -1.0E7;
@@ -507,6 +510,7 @@ long BLOCK::LOAD_SUB2(long tg){
 long BLOCK::SOLVE(long appsCont){
 	//
 	MESH();
+	double charLeng = GET_CHAR_LENG();
 	//
 	std::vector<long> xyzN = {
 		3 * (domaNumb[0] - 1) * domaNumb[1] * domaNumb[2], 
@@ -570,8 +574,8 @@ long BLOCK::SOLVE(long appsCont){
 	for(long ts = 0; ts < searCont.size(); ts ++){
 		searCont[ts].mastGrid = &(multGrid[contBody[ts][0]]);
 		searCont[ts].slavGrid = &(multGrid[contBody[ts][1]]);
-		penaFact_n[ts] = 210.0E9 * 1000.0;
-		penaFact_f[ts] = 210.0E9 * 1000.0;
+		penaFact_n[ts] = 210.0E9 * charFact / charLeng;;
+		penaFact_f[ts] = 210.0E9 * charFact / charLeng;;
 		if(ts < xyzN[0] + xyzN[1] + xyzN[2] + xyzN[3]){
 			fricCoef[ts] = -1.0;
 		}

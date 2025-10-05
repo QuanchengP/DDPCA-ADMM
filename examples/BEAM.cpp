@@ -58,11 +58,19 @@ int main(int argc, char **argv){
 			break;
 		}
 		case 1:{
-			BEAM beam(1);
-			beam.muscSett = SELE_COSP();
-			beam.domaNumb = {16, 4, 1};//each diviNumb is divisible by each domaNumb
-			beam.doleMcsc.assign(beam.domaNumb[0] * beam.domaNumb[1] * beam.domaNumb[2], 1);
-			beam.SOLVE();
+			// for(long ti = 1; ti <= 100; ti ++){
+				BEAM beam(1);
+				beam.muscSett = /*(1 << 0);*/SELE_COSP();
+				beam.domaNumb = {16, 4, 1};//each diviNumb is divisible by each domaNumb
+				beam.doleMcsc.assign(beam.domaNumb[0] * beam.domaNumb[1] * beam.domaNumb[2], 1);
+				// beam.charFact = ti;
+				beam.SOLVE();
+				//
+				// std::ofstream tempOfst(DIRECTORY("resuIterNumb.txt"), std::ios::app);
+				// tempOfst << std::setw(10) << ti 
+					// << std::setw(10) << beam.iterNumbReco << std::endl;
+				// tempOfst.close();
+			// }
 			break;
 		}
 		case 2:{

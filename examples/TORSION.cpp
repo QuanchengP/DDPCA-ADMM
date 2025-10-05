@@ -58,11 +58,19 @@ int main(int argc, char **argv){
 			break;
 		}
 		case 1:{
-			TORSION tors(1);
-			tors.muscSett = SELE_COSP();
-			tors.domaNumb = {1, 16, 4};//each diviNumb is divisible by each domaNumb
-			tors.doleMcsc.assign(tors.domaNumb[0] * tors.domaNumb[1] * tors.domaNumb[2], 2);
-			tors.SOLVE();
+			// for(long ti = 1; ti <= 100; ti ++){
+				TORSION tors(1);
+				tors.muscSett = /*(1 << 0);*/SELE_COSP();
+				tors.domaNumb = {1, 16, 4};//each diviNumb is divisible by each domaNumb
+				tors.doleMcsc.assign(tors.domaNumb[0] * tors.domaNumb[1] * tors.domaNumb[2], 2);
+				// tors.charFact = ti;
+				tors.SOLVE();
+				//
+				// std::ofstream tempOfst(DIRECTORY("resuIterNumb.txt"), std::ios::app);
+				// tempOfst << std::setw(10) << ti 
+					// << std::setw(10) << tors.iterNumbReco << std::endl;
+				// tempOfst.close();
+			// }
 			break;
 		}
 		case 2:{

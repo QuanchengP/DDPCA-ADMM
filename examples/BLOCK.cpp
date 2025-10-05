@@ -64,14 +64,22 @@ int main(int argc, char **argv){
 			break;
 		}
 		case 1:{
-			BLOCK bloc;
-			bloc.muscSett = SELE_COSP_1();
-			//every diviNumb is divisible by all domaNumb
-			bloc.domaNumb = {2, 2, 2};//only support 1~3
-			bloc.doleMcsc.assign(
-				3 * bloc.domaNumb[0] * bloc.domaNumb[1] * bloc.domaNumb[2] + 6, 1
-			);
-			bloc.SOLVE();
+			// for(long ti = 1; ti <= 100; ti ++){
+				BLOCK bloc;
+				bloc.muscSett = /*(1 << 0);*/SELE_COSP_1();
+				//every diviNumb is divisible by all domaNumb
+				bloc.domaNumb = {2, 2, 2};//only support 1~3
+				bloc.doleMcsc.assign(
+					3 * bloc.domaNumb[0] * bloc.domaNumb[1] * bloc.domaNumb[2] + 6, 1
+				);
+				// bloc.charFact = ti;
+				bloc.SOLVE();
+				//
+				// std::ofstream tempOfst(DIRECTORY("resuIterNumb.txt"), std::ios::app);
+				// tempOfst << std::setw(10) << ti 
+					// << std::setw(10) << bloc.iterNumbReco << std::endl;
+				// tempOfst.close();
+			// }
 			break;
 		}
 		case 2:{

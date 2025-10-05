@@ -1,6 +1,8 @@
 
 #include "../MCONTACT.h"
 
+constexpr double struScalFact = 1.0;//structure scale factor
+
 class CYLINDER: public MCONTACT{
 public:
 	long copyNumb;//axial number of domains for each cylinder
@@ -28,6 +30,7 @@ public:
 	long ESTA_SURF();//establish surface
 	long MESH();//generate mesh
 	long SOLVE(long appsCont = 1);//solve for displacement and contact pressure
+	double charFact = 25.0;
 };
 
 CYLINDER::CYLINDER(){
@@ -39,7 +42,7 @@ CYLINDER::CYLINDER(){
 	muscSett = (1 << 0);
 	doleMcsc.assign(4 * 2 * copyNumb, 0);
 	//
-	radi = {0.02, 0.022, 0.022, 0.02};
+	radi = {0.02 * struScalFact, 0.022 * struScalFact, 0.022 * struScalFact, 0.02 * struScalFact};
 	diviAngl = {- 5.0 / 8.0 * PI, - 3.0 / 8.0 * PI};
 	diviPoin.resize(4);
 	for(long tg = 0; tg < 4; tg ++){
@@ -54,8 +57,8 @@ CYLINDER::CYLINDER(){
 	globHomo = 0;
 	locaLeve = 7;
 	//
-	bandWidt = 100.0E-6;//half contact band width
-	loadInte = -50.0E3;
+	bandWidt = 100.0E-6 * struScalFact;//half contact band width
+	loadInte = -50.0E3 * struScalFact;
 }
 
 long CYLINDER::COOR_TRAN_0(COOR &tempCoor){
@@ -171,7 +174,9 @@ long CYLINDER::MESH(){
 		{2, 2, 1, 16 / copyNumb}, {2, 2, 1, 16 / copyNumb}
 	};
 	//leng must be equal
-	leng = {0.02 / copyNumb, 0.02 / copyNumb, 0.02 / copyNumb, 0.02 / copyNumb};
+	leng = {0.02 * struScalFact / copyNumb, 0.02 * struScalFact / copyNumb, 
+		0.02 * struScalFact / copyNumb, 0.02 * struScalFact / copyNumb
+	};
 	buckNumb.resize(11);
 	//buckNumb can not be too large, the smaller is the safer (although lower efficiency)
 	buckNumb[0] = {8, 
@@ -496,6 +501,7 @@ long CYLINDER::MESH(){
 long CYLINDER::SOLVE(long appsCont){
 	//
 	MESH();
+	double charLeng = GET_CHAR_LENG();
 	//
 	long totaSear = 6 * copyNumb + 8 * (copyNumb - 1) + 4 * copyNumb;
 	searCont.resize(totaSear);
@@ -514,8 +520,8 @@ long CYLINDER::SOLVE(long appsCont){
 		for(long ti = 0; ti < 6; ti ++){
 			searCont[6 * ta + ti].mastGrid = &(multGrid[contBody[6 * ta + ti][0]]);
 			searCont[6 * ta + ti].slavGrid = &(multGrid[contBody[6 * ta + ti][1]]);
-			penaFact_n[6 * ta + ti] = 210.0E9 * 1000.0;
-			penaFact_f[6 * ta + ti] = 210.0E9 * 1000.0;
+			penaFact_n[6 * ta + ti] = 210.0E9 * charFact / charLeng;
+			penaFact_f[6 * ta + ti] = 210.0E9 * charFact / charLeng;
 			fricCoef[6 * ta + ti] = 0.0;
 		}
 	}
@@ -526,8 +532,8 @@ long CYLINDER::SOLVE(long appsCont){
 			//
 			searCont[ts].mastGrid = &(multGrid[contBody[ts][0]]);
 			searCont[ts].slavGrid = &(multGrid[contBody[ts][1]]);
-			penaFact_n[ts] = 210.0E9 * 1000.0;
-			penaFact_f[ts] = 210.0E9 * 1000.0;
+			penaFact_n[ts] = 210.0E9 * charFact / charLeng;
+			penaFact_f[ts] = 210.0E9 * charFact / charLeng;
 			fricCoef[ts] = -1.0;
 		}
 	}
@@ -538,8 +544,8 @@ long CYLINDER::SOLVE(long appsCont){
 			//
 			searCont[ts].mastGrid = &(multGrid[contBody[ts][0]]);
 			searCont[ts].slavGrid = &(multGrid[contBody[ts][1]]);
-			penaFact_n[ts] = 210.0E9 * 1000.0;
-			penaFact_f[ts] = 210.0E9 * 1000.0;
+			penaFact_n[ts] = 210.0E9 * charFact / charLeng;
+			penaFact_f[ts] = 210.0E9 * charFact / charLeng;
 			fricCoef[ts] = -1.0;
 		}
 	}

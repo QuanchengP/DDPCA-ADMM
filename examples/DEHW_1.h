@@ -41,6 +41,7 @@ public:
 	//appsCont(automatic penalty parameter selection): 0 - eigen analysis, 1 - contact analysis
 	//isnoDode: 0 - no DD, 1 - DD(domain decomposition)
 	long SOLVE(long appsCont = 1, long isnoDode = 1);
+	double charFact = 25.0;
 };
 
 DEHW_1::DEHW_1(long tempColo){
@@ -1429,6 +1430,8 @@ long DEHW_1::UPDA_WHDE(const std::vector<long> &inpuNode,
 }
 
 long DEHW_1::CONT_INTE_DD(){
+	//
+	double charLeng = GET_CHAR_LENG();
 	//****************************************************************************************
 	OUTPUT_TIME("DEHW_1::CONT_INTE_DD local mesh refinement");
 	auto CART_CURV = [=](COOR tempCoor, double &tempXico, double &tempEtac){
@@ -1546,10 +1549,10 @@ long DEHW_1::CONT_INTE_DD(){
 				searCont[searCoun].mastGrid = &(multGrid[contBody[searCoun][0]]);
 				searCont[searCoun].slavGrid = &(multGrid[contBody[searCoun][1]]);
 				penaFact_n[searCoun] = (multGrid[contBody[searCoun][0]].mateElas 
-					+ multGrid[contBody[searCoun][1]].mateElas) * 500.0;
+					+ multGrid[contBody[searCoun][1]].mateElas) / 2.0 * charFact / charLeng;
 				penaFact_f[searCoun] = (multGrid[contBody[searCoun][0]].mateElas 
-					+ multGrid[contBody[searCoun][1]].mateElas) * 
-					((coloSett == 1) ? 5.0 : 50.0);
+					+ multGrid[contBody[searCoun][1]].mateElas) / 2.0 / charLeng * 
+					tapeCoef;
 				fricCoef[searCoun] = (coloSett == 1) ? 0.08 : 0.2;
 				cusuTabl[searCoun][0] = cusuTabl_0[tt][0];
 				cusuTabl[searCoun][1] = cusuTabl_0[tt][1];
@@ -1564,9 +1567,9 @@ long DEHW_1::CONT_INTE_DD(){
 		searCont[ts].mastGrid = &(multGrid[contBody[ts][0]]);
 		searCont[ts].slavGrid = &(multGrid[contBody[ts][1]]);
 		penaFact_n[ts] = (multGrid[contBody[ts][0]].mateElas 
-			+ multGrid[contBody[ts][1]].mateElas) * 500.0;
+			+ multGrid[contBody[ts][1]].mateElas) / 2.0 * charFact / charLeng;
 		penaFact_f[ts] = (multGrid[contBody[ts][0]].mateElas 
-			+ multGrid[contBody[ts][1]].mateElas) * 500.0;
+			+ multGrid[contBody[ts][1]].mateElas) / 2.0 * charFact / charLeng;
 		fricCoef[ts] = -1.0;
 	}
 	for(long tv = 0; tv < dehwSurf.gridNumb[0][6] - dehwSurf.circNumb; tv ++){
@@ -1575,9 +1578,9 @@ long DEHW_1::CONT_INTE_DD(){
 		searCont[ts].mastGrid = &(multGrid[contBody[ts][0]]);
 		searCont[ts].slavGrid = &(multGrid[contBody[ts][1]]);
 		penaFact_n[ts] = (multGrid[contBody[ts][0]].mateElas 
-			+ multGrid[contBody[ts][1]].mateElas) * 500.0;
+			+ multGrid[contBody[ts][1]].mateElas) / 2.0 * charFact / charLeng;
 		penaFact_f[ts] = (multGrid[contBody[ts][0]].mateElas 
-			+ multGrid[contBody[ts][1]].mateElas) * 500.0;
+			+ multGrid[contBody[ts][1]].mateElas) / 2.0 * charFact / charLeng;
 		fricCoef[ts] = -1.0;
 	}
 	for(long ti = 0; ti < dehwSurf.gridNumb[1][5]; ti ++){
@@ -1591,9 +1594,9 @@ long DEHW_1::CONT_INTE_DD(){
 			searCont[ts].mastGrid = &(multGrid[contBody[ts][0]]);
 			searCont[ts].slavGrid = &(multGrid[contBody[ts][1]]);
 			penaFact_n[ts] = (multGrid[contBody[ts][0]].mateElas 
-				+ multGrid[contBody[ts][1]].mateElas) * 500.0;
+				+ multGrid[contBody[ts][1]].mateElas) / 2.0 * charFact / charLeng;
 			penaFact_f[ts] = (multGrid[contBody[ts][0]].mateElas 
-				+ multGrid[contBody[ts][1]].mateElas) * 500.0;
+				+ multGrid[contBody[ts][1]].mateElas) / 2.0 * charFact / charLeng;
 			fricCoef[ts] = -1.0;
 		}
 	}
@@ -1609,9 +1612,9 @@ long DEHW_1::CONT_INTE_DD(){
 			searCont[ts].mastGrid = &(multGrid[contBody[ts][0]]);
 			searCont[ts].slavGrid = &(multGrid[contBody[ts][1]]);
 			penaFact_n[ts] = (multGrid[contBody[ts][0]].mateElas 
-				+ multGrid[contBody[ts][1]].mateElas) * 500.0;
+				+ multGrid[contBody[ts][1]].mateElas) / 2.0 * charFact / charLeng;
 			penaFact_f[ts] = (multGrid[contBody[ts][0]].mateElas 
-				+ multGrid[contBody[ts][1]].mateElas) * 500.0;
+				+ multGrid[contBody[ts][1]].mateElas) / 2.0 * charFact / charLeng;
 			fricCoef[ts] = -1.0;
 		}
 	}
@@ -1988,6 +1991,8 @@ long DEHW_1::CONT_INTE_DD(){
 }
 
 long DEHW_1::CONT_INTE_NODD(){
+	//
+	double charLeng = GET_CHAR_LENG();
 	//****************************************************************************************
 	OUTPUT_TIME("DEHW_1::CONT_INTE_NODD local mesh refinement");
 	auto CART_CURV = [=](COOR tempCoor, double &tempXico, double &tempEtac){
@@ -2070,10 +2075,10 @@ long DEHW_1::CONT_INTE_NODD(){
 		searCont[searCoun].mastGrid = &(multGrid[contBody[searCoun][0]]);
 		searCont[searCoun].slavGrid = &(multGrid[contBody[searCoun][1]]);
 		penaFact_n[searCoun] = (multGrid[contBody[searCoun][0]].mateElas 
-			+ multGrid[contBody[searCoun][1]].mateElas) * 500.0;
+			+ multGrid[contBody[searCoun][1]].mateElas) / 2.0 * charFact / charLeng;
 		penaFact_f[searCoun] = (multGrid[contBody[searCoun][0]].mateElas 
-			+ multGrid[contBody[searCoun][1]].mateElas) * 
-			((coloSett == 1) ? 5.0 : 50.0);
+			+ multGrid[contBody[searCoun][1]].mateElas) / 2.0 / charLeng * 
+			tapeCoef;
 		fricCoef[searCoun] = (coloSett == 1) ? 0.08 : 0.2;
 		cusuTabl[searCoun][0] = cusuTabl_0[tt][0];
 		cusuTabl[searCoun][1] = cusuTabl_0[tt][1];

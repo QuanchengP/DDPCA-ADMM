@@ -58,10 +58,18 @@ int main(int argc, char **argv){
 			break;
 		}
 		case 1:{
-			CYLINDER cyli;
-			cyli.copyNumb = 8;
-			cyli.muscSett = SELE_COSP_1();
-			cyli.SOLVE();
+			// for(long ti = 1; ti <= 100; ti ++){
+				CYLINDER cyli;
+				cyli.copyNumb = 8;
+				cyli.muscSett = /*(1 << 0);*/SELE_COSP_1();
+				// cyli.charFact = ti;
+				cyli.SOLVE();
+				//
+				// std::ofstream tempOfst(DIRECTORY("resuIterNumb.txt"), std::ios::app);
+				// tempOfst << std::setw(10) << ti 
+					// << std::setw(10) << cyli.iterNumbReco << std::endl;
+				// tempOfst.close();
+			// }
 			break;
 		}
 		case 2:{

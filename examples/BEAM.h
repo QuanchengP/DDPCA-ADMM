@@ -30,6 +30,8 @@
 
 #include "../MCONTACT.h"
 
+constexpr double struScalFact = 1.0;//structure scale factor
+
 class BEAM: public MCONTACT{
 public:
 	//
@@ -53,6 +55,7 @@ public:
 	long SOLVE(long appsCont = 1, long noddPrec = 1, long loadType = 0);//solve for displacement
 	long SOLVE_DD(long appsCont);//domain decomposition
 	long SOLVE_NODD(long noddPrec);//no domain decomposition
+	double charFact = 25.0;
 };
 
 BEAM::BEAM(long tempColo){
@@ -64,7 +67,7 @@ BEAM::BEAM(long tempColo){
 	domaNumb = {32, 4, 2};//each diviNumb is divisible by each domaNumb
 	doleMcsc.assign(domaNumb[0] * domaNumb[1] * domaNumb[2], 1);
 	//
-	leng = {1.0, 0.12, 0.06};
+	leng = {1.0 * struScalFact, 0.12 * struScalFact, 0.06 * struScalFact};
 	lengFact = 1.0 / 3.0;
 	angl = 45.0 * PI / 180.0;
 	diviNumb = {64, 4, 2};//must be even
@@ -420,6 +423,8 @@ long BEAM::SOLVE_NODD(long noddPrec){
 
 long BEAM::SOLVE_DD(long appsCont){
 	//
+	double charLeng = GET_CHAR_LENG();
+	//
 	std::vector<long> xyzN = {
 		(domaNumb[0] - 1) * domaNumb[1] * domaNumb[2], 
 		(domaNumb[1] - 1) * domaNumb[0] * domaNumb[2], 
@@ -458,8 +463,8 @@ long BEAM::SOLVE_DD(long appsCont){
 	for(long ts = 0; ts < searCont.size(); ts ++){
 		searCont[ts].mastGrid = &(multGrid[contBody[ts][0]]);
 		searCont[ts].slavGrid = &(multGrid[contBody[ts][1]]);
-		penaFact_n[ts] = 210.0E9 * 1000.0;
-		penaFact_f[ts] = 210.0E9 * 1000.0;
+		penaFact_n[ts] = 210.0E9 * charFact / charLeng;
+		penaFact_f[ts] = 210.0E9 * charFact / charLeng;
 		fricCoef[ts] = -1.0;
 	}
 	//

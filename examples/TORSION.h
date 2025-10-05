@@ -1,6 +1,8 @@
 
 #include "../MCONTACT.h"
 
+constexpr double struScalFact = 1.0;//structure scale factor
+
 class TORSION: public MCONTACT{
 public:
 	//
@@ -26,6 +28,7 @@ public:
 	long SOLVE(long appsCont = 1, long noddPrec = 1);//solve for displacement
 	long SOLVE_DD(long appsCont);
 	long SOLVE_NODD(long noddPrec);
+	double charFact = 25.0;
 };
 
 TORSION::TORSION(long tempColo){
@@ -37,13 +40,13 @@ TORSION::TORSION(long tempColo){
 	domaNumb = {1, 32, 8};//each diviNumb is divisible by each domaNumb
 	doleMcsc.assign(domaNumb[0] * domaNumb[1] * domaNumb[2], 1);
 	//
-	axiaLeng = 0.1;
-	inneRadi = 0.015;
-	outeRadi = 0.025;//I_p = PI / 32.0 * (D^4 - d^4) = 0.005340707511103
+	axiaLeng = 0.1 * struScalFact;
+	inneRadi = 0.015 * struScalFact;
+	outeRadi = 0.025 * struScalFact;//I_p = PI / 32.0 * (D^4 - d^4) = 0.005340707511103
 	diviNumb = {1, 32, 8};//8, 32, 64
 	globInho = 1;//0
 	globHomo = 4;//0
-	torqLoad = 20.0;//N*m, u = T*l/G/I_p * R = 1.159111630361142e-06
+	torqLoad = 20.0 * pow(struScalFact, 3.0);//N*m, u = T*l/G/I_p * R = 1.159111630361142e-06
 	coloSett = tempColo;
 }
 
@@ -432,6 +435,8 @@ long TORSION::SOLVE_NODD(long noddPrec){
 
 long TORSION::SOLVE_DD(long appsCont){
 	//
+	double charLeng = GET_CHAR_LENG();
+	//
 	std::vector<long> xyzN = {
 		(domaNumb[0] - 1) * domaNumb[1] * domaNumb[2], 
 		(domaNumb[1] - 0) * domaNumb[0] * domaNumb[2], 
@@ -470,8 +475,8 @@ long TORSION::SOLVE_DD(long appsCont){
 	for(long ts = 0; ts < searCont.size(); ts ++){
 		searCont[ts].mastGrid = &(multGrid[contBody[ts][0]]);
 		searCont[ts].slavGrid = &(multGrid[contBody[ts][1]]);
-		penaFact_n[ts] = 210.0E9 * 1000.0;
-		penaFact_f[ts] = 210.0E9 * 1000.0;
+		penaFact_n[ts] = 210.0E9 * charFact / charLeng;
+		penaFact_f[ts] = 210.0E9 * charFact / charLeng;
 		fricCoef[ts] = -1.0;
 	}
 	//

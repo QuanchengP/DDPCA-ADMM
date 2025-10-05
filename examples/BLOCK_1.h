@@ -21,6 +21,7 @@ public:
 	long LOAD_SUB(long tb, long tg);//load subroutine for upper surface of middle/lower block
 	long LOAD_SUB2(long tg);//load subroutine for upper surface of upper block
 	long SOLVE(long appsCont = 1);//solve for displacement and contact pressure
+	double charFact = 25.0;
 };
 
 BLOCK_1::BLOCK_1(){
@@ -347,6 +348,7 @@ long BLOCK_1::LOAD_SUB2(long tg){
 long BLOCK_1::SOLVE(long appsCont){
 	//
 	MESH();
+	double charLeng = GET_CHAR_LENG();
 	//
 	std::vector<std::vector<std::vector<long>>> copaPrec(2);
 	for(long tb = 0; tb < 2; tb ++){
@@ -440,8 +442,8 @@ long BLOCK_1::SOLVE(long appsCont){
 	for(long ts = 0; ts < searCont.size(); ts ++){
 		searCont[ts].mastGrid = &(multGrid[contBody[ts][0]]);
 		searCont[ts].slavGrid = &(multGrid[contBody[ts][1]]);
-		penaFact_n[ts] = 210.0E9 * 1000.0;
-		penaFact_f[ts] = 210.0E9 * 1000.0;
+		penaFact_n[ts] = 210.0E9 * charFact / charLeng;
+		penaFact_f[ts] = 210.0E9 * charFact / charLeng;
 		if(ts < xyzN[0] + xyzN[1] + xyzN[2]){
 			fricCoef[ts] = -1.0;
 		}

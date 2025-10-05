@@ -31,13 +31,11 @@
 #include "DEHW.h"
 #include "DEHW_1.h"
 
-long EXAM_DEHW();//example DEHW
 long ISNO_EIGE();//is/not eigen analysis
 long TANG_PEPA();//tangential penalty parameter
 long ISNO_SELO();//is/not self-locking
 long SHOW_ABBR();//show abbreviation
-long SELE_COSP();//select multigrid strategy
-long SELE_COSP_1();
+long SELE_COSP_1();//select multigrid strategy
 
 int main(int argc, char **argv){
 	omp_set_nested(1);//nested parallelism
@@ -66,11 +64,20 @@ int main(int argc, char **argv){
 		case 1:{
 			TANG_PEPA();
 			DEHW solv(isnoSelo);
-			long isnoEige = ISNO_EIGE();
+			long isnoEige = /*0;*/ISNO_EIGE();
 			switch(isnoEige){
 				case 0:{
-					SELE_COSP_1();
-					solv.SOLVE();
+					// for(long ti = 1; ti <= 100; ti ++){
+						// DEHW solv(isnoSelo);
+						/*whadCosp = (1 << 0);*/SELE_COSP_1();
+						// solv.charFact = ti;
+						solv.SOLVE();
+						//
+						// std::ofstream tempOfst(DIRECTORY("resuIterNumb.txt"), std::ios::app);
+						// tempOfst << std::setw(10) << ti 
+							// << std::setw(10) << solv.iterNumbReco << std::endl;
+						// tempOfst.close();
+					// }
 					break;
 				}
 				case 1:{
@@ -116,29 +123,29 @@ long ISNO_EIGE(){
 long TANG_PEPA(){
 	std::cout << std::endl;
 	std::cout << "*******Coefficient of tangential penalty parameter******" << std::endl;
-	std::cout << "*0 - f_t^worm,wheel = 1                                *" << std::endl;
-	std::cout << "*1 - f_t^worm,wheel = 10                               *" << std::endl;
-	std::cout << "*2 - f_t^worm,wheel = 100                              *" << std::endl;
-	std::cout << "*3 - f_t^worm,wheel = 1000                             *" << std::endl;
+	std::cout << "*0 - f_t^worm,wheel = 0.025                            *" << std::endl;
+	std::cout << "*1 - f_t^worm,wheel = 0.25                             *" << std::endl;
+	std::cout << "*2 - f_t^worm,wheel = 2.5                              *" << std::endl;
+	std::cout << "*3 - f_t^worm,wheel = 25                               *" << std::endl;
 	std::cout << "********************************************************" << std::endl;
 	std::cout << "Please enter a number in 0~2: ";
 	long caid;
 	std::cin >> caid;
 	switch(caid){
 		case 0:{
-			tapeCoef = 0.5;
+			tapeCoef = 0.025;
 			break;
 		}
 		case 1:{
-			tapeCoef = 5.0;
+			tapeCoef = 0.25;
 			break;
 		}
 		case 2:{
-			tapeCoef = 50.0;
+			tapeCoef = 2.5;
 			break;
 		}
 		case 3:{
-			tapeCoef = 500.0;
+			tapeCoef = 25.0;
 			break;
 		}
 	}
