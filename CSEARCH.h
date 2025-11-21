@@ -449,8 +449,8 @@ long CSEARCH::MAST_TO_SLAV(const std::vector<Eigen::Vector3d> &mastCorn,
 		std::cout << "Warning 1 in CONTACT::MAST_TO_SLAV!" << std::endl;
 	}
 	maslPoin[1] = Eigen::Vector3d::Zero();
+	maslShap[1].resize(4);
 	for(long ti = 0; ti < 4; ti ++){
-		maslShap[1].resize(4);
 		maslShap[1][ti] = (1.0 + biliQuad.nacoCorn[ti][0] * slavXiet(0)) 
 			* (1.0 + biliQuad.nacoCorn[ti][1] * slavXiet(1)) / 4.0;
 		maslPoin[1] = maslPoin[1] + maslShap[1][ti] * slavCorn[ti];
@@ -956,3 +956,4 @@ long CSEARCH::ADAPTIVE_REFINE(MULTIGRID *tempMast, MULTIGRID *tempSlav, bool &is
 }
 
 #endif
+
