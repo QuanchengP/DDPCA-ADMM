@@ -593,7 +593,7 @@ long MCONTACT::ESTABLISH(){
 			}
 			else{
 				std::vector<Eigen::Triplet<double>> fricList;
-				fricList.reserve(searCont[ts].intePoin.size() * 12);
+				fricList.reserve(searCont[ts].intePoin.size() * 36);
 				for(long ti = 0; ti < searCont[ts].intePoin.size(); ti ++){
 					Eigen::Matrix<double,3,3> tempTang;
 					tempTang.block(0,0,1,3) = searCont[ts].intePoin[ti].basiVect[0].transpose();
@@ -3701,3 +3701,4 @@ long MCONTACT::LAGRANGE(long precType){
 }
 
 #endif
+
