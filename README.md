@@ -23,7 +23,7 @@ Domain decomposition-based parallel contact analysis by alternating direction me
 6.Postprocess:
 > + Run the .m scripts in "Postprocess.m" by MATLAB.
 
-In case of any problem in code compilation or execution, please feel free to contact us by email (QuanchengPeng@sylu.edu.cn) or other available communications. In the current code version, the basiVect[1]/basiVect[2] of class INTEGRAL_POINT are not strictly perpendicular to each other (only approximately), this issue will be fixed in the next code version.
+In case of any problem in code compilation or execution, please feel free to contact us by email (QuanchengPeng@sylu.edu.cn) or other available communications.
 
 ## Structure description
 
@@ -45,4 +45,5 @@ graph LR;
 | CSEARCH   | Global and local contact search, adaptive mesh refinement around contact region        |
 | MGPIS     | Multigrid preconditioned iterative solver        |
 | MCONTACT  | DDPCA-ADMM, dual mortar method        |
+
 
