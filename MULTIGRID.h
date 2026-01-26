@@ -966,7 +966,11 @@ long MULTIGRID::STIF_MATR(){
 		partNumb ++;
 	}
 	std::vector<Eigen::SparseMatrix<double,Eigen::RowMajor>> partStif(partNumb);
-	#pragma omp parallel for
+	long ompNumb = omp_get_num_threads();
+	if(partNumb < 10){
+		ompNumb = 1;
+	}
+	#pragma omp parallel for num_threads(ompNumb)
 	for(long tp = 0; tp < partNumb; tp ++){
 		long star_tp = tp * partSize;
 		long endi_tp = star_tp + partSize;
@@ -1433,3 +1437,4 @@ long MULTIGRID::STRESS_RECOVERY(Eigen::VectorXd outpDisp, long fileIden){
 }
 
 #endif
+
