@@ -1,0 +1,38 @@
+\chapter{Quick start}
+
+\section{Compiling}
+
+\begin{enumerate}[label=$\blacksquare$]
+\item Download the source code and extract it, then: 
+\begin{lstlisting}[breaklines=true]
+cd DDPCA-ADMM-dev-2.0.0
+make -j$(nproc)
+\end{lstlisting}
+\item Only Ubuntu 22.04.5 LTS is tested. Higher versions of Ubuntu should also be compilable, but this has not been verified yet.
+\end{enumerate}
+
+\section{Execution}
+
+\begin{enumerate}[label=$\blacksquare$]
+\item Please see the Chapter 2.
+\item It is recommended to install jemalloc:
+\begin{lstlisting}[breaklines=true]
+sudo apt install libjemalloc-dev -y
+\end{lstlisting}
+\end{enumerate}
+
+\section{Postprocess}
+
+\begin{enumerate}[label=$\blacksquare$]
+\item Please run the .m scripts in "Postprocess.m" by MATLAB.
+\end{enumerate}
+
+\section{Hardware dependency}
+
+Our source code shows high dependency on the hardware. Please make sure that the hardware meets the following requirements:
+
+\begin{enumerate}[label=$\blacksquare$]
+\item In \lstinline{Utility.hpp}, the \lstinline{constexpr I64 nfsAlign = 64;} fixes the cahce line size as 64. (Required)
+\item In \lstinline{General.hpp}, the \lstinline{numbThreads = std::thread::hardware_concurrency() / 2;} assumes that SMT (simultaneous multi-threading) is enabled. (Optional)
+\item In \lstinline{ThreadManager.cpp}, the \lstinline{pthread_setaffinity_np(tid, sizeof(cpuset), &cpuset)} binds the thread to the CPU core. (Optional)
+\end{enumerate}

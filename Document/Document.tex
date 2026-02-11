@@ -1,0 +1,57 @@
+\documentclass{book}
+
+\usepackage{enumitem}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{bm}
+\usepackage{xcolor}
+\usepackage{ulem} % delete line break
+\usepackage{graphicx}
+\usepackage{geometry}
+\geometry{
+    left=2cm,
+    right=2cm,
+    top=2cm,
+    bottom=2cm
+}
+\usepackage{listings}
+\lstset{
+    basicstyle=\ttfamily\color{teal},
+    keywordstyle=\color{blue},
+    stringstyle=\color{red}
+    breaklines=true,        % 核心：允许代码自动换行
+    breakatwhitespace=true, % 优先在空格处换行（更美观）
+    columns=flexible        % 适配不同字符宽度
+}
+\usepackage[sectionbib]{chapterbib} % 核心：实现章节独立参考文献，book文档类专属
+\usepackage{natbib}                 % 增强引用功能，兼容所有\cite{}命令，可选但推荐
+\usepackage{url}
+
+\setcounter{secnumdepth}{3}  % 开启四级标题编号
+\renewcommand{\thesubsubsection}{\thesubsection.\arabic{subsubsection}}  % 编号格式 3.4.1.2
+\setcounter{tocdepth}{3}     % 目录显示四级标题
+
+\begin{document}
+
+\frontmatter
+\title{Document}
+\author{Quancheng Peng}
+\date{\today}
+\maketitle
+
+\tableofcontents
+
+\mainmatter
+
+\include{QuickStart}
+
+\include{Examples}
+
+\include{Developer}
+
+\backmatter
+% \bibliographystyle{plainnat}
+% \bibliography{references} 
+% \appendix
+
+\end{document}
