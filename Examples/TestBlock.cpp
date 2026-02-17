@@ -399,6 +399,7 @@ public:
         std::array<Ddpca::Real,4> N_e;
         std::vector<Ddpca::Coordinate> elementCoordinates(4);
         Ddpca::DenseMatrix N_e_0(3,12), F_e(12,1), tkF_e(12,1);
+        tgSurf.Initialize();
         while(tgSurf.Increment(tgMesh)){
             tempNode = tgSurf.currentFace;
             Ddpca::Real minX = 1.0E20, maxX = -1.0E20, minY = 1.0E20, maxY = -1.0E20;
@@ -503,6 +504,7 @@ public:
         std::array<Ddpca::I64,4> tempNode;
         std::vector<Ddpca::Coordinate> elementCoordinates(4);
         Ddpca::DenseMatrix F_e(12,1), tkF_e(12,1), N_e_0(3,12);
+        tgSurf.Initialize();
         while(tgSurf.Increment(tgMesh)){
             tempNode = tgSurf.currentFace;
             for(Ddpca::I64 tk = 0; tk < 4; tk ++){
