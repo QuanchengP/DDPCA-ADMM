@@ -506,8 +506,8 @@ public:
             if(ts < 6){
                 //
                 if(ts <= 3){
-                    Ddpca::CurvedSurface& mastSurf = cyliSurf[tg_mast % 4];
-                    Ddpca::CurvedSurface& slavSurf = cyliSurf[tg_slav % 4];
+                    Ddpca::CurvedSurface mastSurf = cyliSurf[tg_mast % 4];
+                    Ddpca::CurvedSurface slavSurf = cyliSurf[tg_slav % 4];
                     mastSurf.Initialize();
                     while(mastSurf.Increment(masterMesh)){
                         std::array<Ddpca::I64, 4> tempFace = mastSurf.currentFace;
@@ -542,8 +542,8 @@ public:
                 else{
                     const Ddpca::I64 insuSize = inteSurf.size();
                     for(Ddpca::I64 ta = 0; ta < insuSize; ta ++){
-                        Ddpca::CurvedSurface& mastSurf = inteSurf[ta];
-                        Ddpca::CurvedSurface& slavSurf = inteSurf[ta];
+                        Ddpca::CurvedSurface mastSurf = inteSurf[ta];
+                        Ddpca::CurvedSurface slavSurf = inteSurf[ta];
                         mastSurf.Initialize();
                         const Ddpca::Mesh& masterMesh = domains[interfaces[ts].domainIndex[0]].mesh;
                         while(mastSurf.Increment(masterMesh)){
